@@ -1,0 +1,123 @@
+================= CREDITS ==================
+
+Original IRA (C) 1993 Tim Ruehsen
+IRA version 2.04 (C) 2009 by Frank Wille
+vdappc (C) 1998-2001,2009 by Frank Wille
+WOSIRA 0.10 (C) 2011 by Alfkil Wennermark
+
+================= DISCLAIMER ================
+
+Use this software entirely on own responsibility!
+You can copy and modify as much as you want as
+long as you do not remove the references to the
+various authors of it.
+
+================= INTRO ==================
+
+WOSIRA is an expasion of the original IRA, that
+enables you to dis- and re-assemble WarpOS
+executables, which are m68k and ppc code both
+integrated in the same executable. WOSIRA requires
+you to do a little more work to be able to
+reassemble executables, as there is (yet) no
+automatic detection of ppc code and toc areas.
+
+If you don't use any of the speciale WOS tags
+in the config file, WOSIRA will function
+exactly like IRA 2.04.
+
+============== NOTE ==================
+
+WOSIRA is designed to work together with
+vasm and vlink from the vbcc package. If
+you don't have it already, you should get
+the vbcc binary archive that matches your
+system from the vbcc homepage:
+
+
+=============== HOW TO ==================
+
+0) copy wosira to c: or similar
+1) locate your favorite warpos exe.
+2) open a shell and run:
+
+> wosira -a -PREPROC <yourexe>
+
+3) open the generated file <yourexe>.cnf
+4) open <yourexe>.asm
+5) locate the section in the asm file that
+ contains ppc code. It should be a long
+ section that contains mostly DC.L statements.
+6) insert this line in <yourexe>.cnf:
+
+WOSCODE $<startaddr> - $<endaddr>
+
+(Be aware that endaddr is the start address
+of the next section, NOT the last address of
+the current one.
+
+Steps 7)-11) are optional
+7) Locate the point in the code that contains
+the reference to the toc area.
+
+EXPLANATION: WarpOS uses the small data model
+of the PowerOPEN ABI, that reference variables
+relative to the r2 toc register. The toc section
+is a (large) section, that contains pointers to
+other sections,code and variables of max 4 bytes
+in length. During the startup, the reference
+pointer of the toc is loaded into r2. This might
+happen in either the m68k code or the ppc code.
+If it happens in the ppc code, you will probably
+be seeing a single lonely relocation (DC.L SECSTRT_x)
+inside the ppc area. When located in the m68k
+code, you have to look a little closer into the
+code to locate the spot, where A4 is initialized
+just before a call to RunPPC (A4 gets translated
+into r2).
+
+8) When located, insert this line in the .cnf file:
+
+WOSSDA $<yourlocation>
+
+9) Locate the toc section
+10) Insert this line in the .cnf file:
+
+WOSTOC $<tocstart> - $<tocend>
+
+11) Find out what the baseoffset for the
+toc section is. Normally (vbcc at least) this
+is 0x7FFE (32766) into the toc section. In that
+case add this line:
+
+WOSBASEOFF $7FFE
+
+In some code (maybe StormC) this offset is 0,
+in which case you should add:
+
+WOSBASEOFF $0000
+
+12) run the following line:
+
+> wosira -a -CONFIG <yourexe>
+
+This will produce a makefile for you. You
+should be able to just run make and get a
+new executable called <yourexe>.exe. Try
+and run this file. If it works, you are
+lucky! ;-)
+
+======= The TRUE power of IRA ========
+
+The true power of IRA is hiden in the CONFIG
+file that it uses. You can produce an
+initial config file by supplying the -PREPROC
+option when you run ira for the first time.
+Then you should edit this file (called
+<yourexe>.cnf by looking at the initially
+produced .asm file and locate which sections
+do what.
+
+Here are the various section types:
+
+TODO

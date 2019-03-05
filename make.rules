@@ -1,0 +1,20 @@
+COMPILE	= $(CC) $(COPTS) $(CCOUT)$@ #$<
+DIR	= obj
+OBJS	= $(DIR)/ira$(OS).o $(DIR)/ira_2$(OS).o $(DIR)/supp$(OS).o $(DIR)/ppc_disasm$(OS).o 
+
+all: wosira$(OS)$(EXT)
+
+wosira$(OS)$(EXT): $(OBJS)
+	$(LD) $(LDOUT)$@ $(OBJS) $(LDFLAGS)
+
+$(DIR)/ira$(OS).o: ira.c ira.h supp.h ppc_disasm.h
+	$(COMPILE) ira.c
+
+$(DIR)/ira_2$(OS).o: ira_2.c ira.h supp.h
+	$(COMPILE) ira_2.c
+
+$(DIR)/supp$(OS).o: supp.c supp.h
+	$(COMPILE) supp.c
+
+$(DIR)/ppc_disasm$(OS).o: ppc_disasm.c ppc_disasm.h
+	$(COMPILE) ppc_disasm.c
